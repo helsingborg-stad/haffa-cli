@@ -1,11 +1,12 @@
-import chalk from "chalk";
 import type { CommandModule } from "yargs";
+import { backupAdvert, getAdverts } from "./helpers/adverts";
 
 const commandSpec: CommandModule = {
   command: "backup-adverts",
-  describe: "Backups adverts to local file system",
+  describe: "Backups adverts to files",
   async handler({}) {
-    console.log(chalk.red("Not implemented yet..."));
+    const adverts = await getAdverts();
+    adverts.forEach(backupAdvert);
   },
 };
 
