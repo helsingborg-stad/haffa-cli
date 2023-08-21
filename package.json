@@ -1,0 +1,60 @@
+{
+  "name": "haffa-cli",
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "module",
+  "description": "CLI admin tool used for Haffa",
+  "main": "index.ts",
+  "author": "Helsingborg Stad",
+  "engines": {
+    "node": "^18.16.0",
+    "yarn": "^1.22.19"
+  },
+  "scripts": {
+    "start": "node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts",
+    "dev": "nodemon --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm' src/index.ts",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.1",
+    "@types/jest": "^29.5.3",
+    "@types/lodash": "^4.14.197",
+    "@types/node": "^18.11.15",
+    "@types/prompts": "^2.4.4",
+    "@types/uuid": "^9.0.2",
+    "@types/yargs": "^17.0.24",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "@typescript-eslint/parser": "^6.4.0",
+    "cz-conventional-emoji": "^1.0.2",
+    "eslint": "^8.47.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-import-resolver-typescript": "^3.6.0",
+    "eslint-plugin-import": "npm:eslint-plugin-i",
+    "eslint-plugin-jest": "^27.2.3",
+    "eslint-plugin-unused-imports": "^3.0.0",
+    "jest": "^29.6.2",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.0.2",
+    "typescript": "^5.1.6"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-emoji"
+    }
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.395.0",
+    "@aws-sdk/lib-dynamodb": "^3.395.0",
+    "@shelf/dynamodb-parallel-scan": "^3.5.3",
+    "chalk": "^5.3.0",
+    "dayjs": "^1.11.9",
+    "dotenv": "^16.3.1",
+    "fs-extra": "^11.1.1",
+    "lodash": "^4.17.21",
+    "node-fetch": "^3.3.2",
+    "prompts": "^2.4.2",
+    "ts-node": "^10.9.1",
+    "uuid": "^9.0.0",
+    "yargs": "^17.7.2"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "ESNext",
+    "rootDir": "./src",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "outDir": "./out"
+  },
+  "include": ["./src", ".eslintrc.js"]
+}
