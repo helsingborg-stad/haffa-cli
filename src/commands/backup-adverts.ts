@@ -6,7 +6,7 @@ const commandSpec: CommandModule = {
   describe: "Backups adverts to files",
   async handler({}) {
     const adverts = await getAdverts();
-    Promise.all(adverts.map(backupAdvert));
+    await Promise.all(adverts.map(backupAdvert));
   },
 };
 
