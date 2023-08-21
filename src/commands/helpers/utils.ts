@@ -3,6 +3,10 @@ import {
   ListTablesCommand,
   ListTablesCommandOutput,
 } from "@aws-sdk/client-dynamodb";
+import { parallelScan } from "@shelf/dynamodb-parallel-scan";
+
+// import { S3Client } from "@aws-sdk/client-s3";
+// import { RawAdvert } from "./advert/types";
 
 export function print(output: string) {
   process.stdout.clearLine(0);
@@ -29,4 +33,11 @@ export async function listTables(): Promise<string[]> {
 export async function getTableNameFromEnv(): Promise<string | undefined> {
   const tables = await listTables();
   return tables.find((t) => t.includes(process.env.API_ENV as string));
+}
+
+export async function queryDb<T>(): Promise<T> {
+  return (parallelScan(
+    { TableName: await getTableNameFromEnv() },
+    { concurrency: 500 },
+  ) ?? []) as T;
 }

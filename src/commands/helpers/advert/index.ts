@@ -1,39 +1,38 @@
-import { parallelScan } from "@shelf/dynamodb-parallel-scan";
 import fs from "fs-extra";
 import path from "path";
-import { getTableNameFromEnv } from "../utils";
+import { queryDb } from "../utils";
 import { RawAdvert, Advert, ItemImages, Image } from "./types";
 
 // const DEFAULT_PROJECTION = "";
 // const DEFAULT_EXPRESSION_ATTRIBUTE_NAMES = {};
 
-function createImageUrlMapper(item: ItemImages): Image {
+function getImageSrcFromS3Item(src: string): string {
+  return "";
+}
+
+async function createImageUrlMapper(item: ItemImages): Promise<Image> {
+  const url = getImageSrcFromS3Item(item.src ?? "");
   return {
-    src: `https://some.url/${item.src}`,
+    src: `https://some.url/${url}`,
   };
 }
 
-function createAdvertMapper(raw: RawAdvert): Advert {
+async function createAdvertMapper(raw: RawAdvert): Promise<Advert> {
+  const images = await Promise.all(raw.images?.map(createImageUrlMapper) ?? []);
   return {
     id: raw.id,
     title: raw.title,
     createdByUser: raw.giver ?? "nobody",
     createdAt: raw.createdAt,
-    images: raw.images?.map(createImageUrlMapper) ?? [],
+    images,
   };
 }
 
 export async function getAdverts(): Promise<Advert[]> {
-  const result = (await parallelScan(
-    {
-      TableName: await getTableNameFromEnv(),
-      FilterExpression: "version = :version",
-      ExpressionAttributeValues: { ":version": 0 },
-    },
-    { concurrency: 500 },
-  )) as RawAdvert[];
-
-  return (result ?? []).map(createAdvertMapper);
+  const rawAdverts = (await queryDb<RawAdvert[]>()).filter(
+    ({ version }) => version === 0,
+  );
+  return Promise.all(rawAdverts.map(createAdvertMapper));
 }
 
 export async function backupAdvert(advert: Advert): Promise<void> {
