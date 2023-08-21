@@ -1,44 +1,15 @@
-import {
-  DynamoDBClient,
-  ListTablesCommand,
-  ListTablesCommandOutput,
-} from "@aws-sdk/client-dynamodb";
 import { parallelScan } from "@shelf/dynamodb-parallel-scan";
 import fs from "fs-extra";
 import path from "path";
+import { getTableNameFromEnv } from "./utils";
 
 export interface Advert {
   id: string;
   giver: string | null;
 }
-export interface ScanProps {
-  filterExpression?: string;
-  expressionAttributeValues?: Record<string, unknown>;
-  limit?: number;
-  filterFunction?: (advertData: Advert) => boolean;
-}
-type AdvertTable = string;
 
 // const DEFAULT_PROJECTION = "";
 // const DEFAULT_EXPRESSION_ATTRIBUTE_NAMES = {};
-
-function getDbClient() {
-  return new DynamoDBClient({
-    region: "eu-west-1",
-  });
-}
-
-async function listTables(): Promise<AdvertTable[]> {
-  const client = getDbClient();
-  const command = new ListTablesCommand({});
-  const response: ListTablesCommandOutput = await client.send(command);
-  return response.TableNames ?? [];
-}
-
-async function getAdvertTableNameFromEnv(): Promise<AdvertTable | undefined> {
-  const tables = await listTables();
-  return tables.find((t) => t.includes(process.env.API_ENV as string));
-}
 
 function mapToAdvert(rawMap: Record<string, unknown>): Advert {
   return {
@@ -51,7 +22,7 @@ function mapToAdvert(rawMap: Record<string, unknown>): Advert {
 export async function getAdverts(): Promise<Advert[]> {
   const result = await parallelScan(
     {
-      TableName: await getAdvertTableNameFromEnv(),
+      TableName: await getTableNameFromEnv(),
       FilterExpression: "version = :version",
       ExpressionAttributeValues: { ":version": 0 },
     },
