@@ -11,6 +11,8 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 
+const AWS_CONFIG = { region: "eu-west-1" };
+
 export function print(output: string) {
   process.stdout.clearLine(0);
   process.stdout.write(`${output}\r`);
@@ -25,13 +27,11 @@ export function isValid<T>(input: T | undefined): input is T {
 }
 
 export function getDbClient() {
-  return new DynamoDBClient({
-    region: "eu-west-1",
-  });
+  return new DynamoDBClient(AWS_CONFIG);
 }
 
 export function getS3Client() {
-  return new S3Client({ region: "eu-west-1" });
+  return new S3Client(AWS_CONFIG);
 }
 
 export async function listTables(): Promise<string[]> {
