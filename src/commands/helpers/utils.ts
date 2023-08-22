@@ -10,7 +10,6 @@ import {
   ListBucketsCommand,
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
-// import { RawAdvert } from "./advert/types";
 
 export function print(output: string) {
   process.stdout.clearLine(0);

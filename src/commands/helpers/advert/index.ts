@@ -25,7 +25,7 @@ async function createAdvertMapper(raw: RawAdvert): Promise<Advert> {
   };
 }
 
-export async function getAdverts(): Promise<Advert[]> {
+export async function getAdvertsFromAws(): Promise<Advert[]> {
   const rawAdverts = (await queryDb<RawAdvert[]>()).filter(
     ({ version }) => version === 0,
   );

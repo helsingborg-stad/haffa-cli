@@ -1,5 +1,5 @@
 import hello from "./hello";
-import backupAdverts from "./backup-adverts";
+import backupAdvertsFromAws from "./backup-adverts-from-aws";
 import userSummary from "./user-summary";
 
-export default [hello, backupAdverts, userSummary];
+export default [hello, backupAdvertsFromAws, userSummary];
