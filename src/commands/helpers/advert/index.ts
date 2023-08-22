@@ -17,8 +17,10 @@ async function createAdvertMapper(raw: RawAdvert): Promise<Advert> {
   return {
     id: raw.id,
     title: raw.title,
+    description: raw.description ?? "",
     createdByUser: raw.giver ?? "nobody",
     createdAt: raw.createdAt,
+    email: raw.email ?? "unknown",
     images,
   };
 }

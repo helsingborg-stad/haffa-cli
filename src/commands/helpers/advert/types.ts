@@ -174,7 +174,9 @@ export interface Image {
 export interface Advert {
   id: string;
   title: string;
+  description: string;
   createdByUser: string;
   createdAt: string;
+  email?: string;
   images?: Image[];
 }
