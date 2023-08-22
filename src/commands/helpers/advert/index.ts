@@ -1,19 +1,14 @@
 import fs from "fs-extra";
 import path from "path";
-import { queryDb } from "../utils";
+import { createPresignedUrl, queryDb } from "../utils";
 import { RawAdvert, Advert, ItemImages, Image } from "./types";
 
 // const DEFAULT_PROJECTION = "";
 // const DEFAULT_EXPRESSION_ATTRIBUTE_NAMES = {};
 
-function getImageSrcFromS3Item(src: string): string {
-  return "";
-}
-
 async function createImageUrlMapper(item: ItemImages): Promise<Image> {
-  const url = getImageSrcFromS3Item(item.src ?? "");
   return {
-    src: `https://some.url/${url}`,
+    src: (await createPresignedUrl("-prod", item?.src ?? "")) ?? "",
   };
 }
 

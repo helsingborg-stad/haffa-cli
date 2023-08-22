@@ -4,8 +4,12 @@ import {
   ListTablesCommandOutput,
 } from "@aws-sdk/client-dynamodb";
 import { parallelScan } from "@shelf/dynamodb-parallel-scan";
-
-// import { S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import {
+  S3Client,
+  ListBucketsCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
 // import { RawAdvert } from "./advert/types";
 
 export function print(output: string) {
@@ -15,6 +19,10 @@ export function print(output: string) {
 
 export function printEndLine() {
   process.stdout.write("\n");
+}
+
+export function isValid<T>(input: T | undefined): input is T {
+  return !!input;
 }
 
 export function getDbClient() {
@@ -40,4 +48,37 @@ export async function queryDb<T>(): Promise<T> {
     { TableName: await getTableNameFromEnv() },
     { concurrency: 500 },
   ) ?? []) as T;
+}
+
+export async function getBuckets(): Promise<string[]> {
+  const client = new S3Client({ region: "eu-west-1" });
+  const command = new ListBucketsCommand({});
+  const result = await client.send(command);
+  return result.Buckets?.map(({ Name }) => Name).filter(isValid) ?? [];
+}
+
+export async function getBucket(matcher: RegExp): Promise<string> {
+  const allBuckets = await getBuckets();
+  const bucket = allBuckets.find((name) => matcher.test(name));
+
+  if (!bucket) {
+    throw new Error(
+      `Unable to find bucket matching pattern '${matcher.source}'`,
+    );
+  }
+
+  return bucket;
+}
+
+export async function createPresignedUrl(
+  bucket: string,
+  key: string,
+): Promise<string | undefined> {
+  const client = new S3Client({ region: "eu-west-1" });
+
+  const command = new GetObjectCommand({
+    Bucket: await getBucket(new RegExp(`${bucket}$`)),
+    Key: `public/${key}`,
+  });
+  return getSignedUrl(client, command, { expiresIn: 300 });
 }
