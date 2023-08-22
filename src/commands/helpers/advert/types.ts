@@ -168,15 +168,12 @@ export type Administration = {
 };
 
 export interface Image {
-  src: string;
+  url: string;
 }
 
-export interface Advert {
-  id: string;
-  title: string;
-  description: string;
+type RawAdvertWithoutImages = Omit<RawAdvert, "images">;
+
+export interface Advert extends RawAdvertWithoutImages {
   createdByUser: string;
-  createdAt: string;
-  email?: string;
   images?: Image[];
 }

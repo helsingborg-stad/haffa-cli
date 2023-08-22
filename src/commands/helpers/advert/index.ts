@@ -8,19 +8,15 @@ import { RawAdvert, Advert, ItemImages, Image } from "./types";
 
 async function createImageUrlMapper(item: ItemImages): Promise<Image> {
   return {
-    src: (await createPresignedUrl("-prod", item?.src ?? "")) ?? "",
+    url: (await createPresignedUrl(item?.src ?? "")) ?? "",
   };
 }
 
 async function createAdvertMapper(raw: RawAdvert): Promise<Advert> {
   const images = await Promise.all(raw.images?.map(createImageUrlMapper) ?? []);
   return {
-    id: raw.id,
-    title: raw.title,
-    description: raw.description ?? "",
+    ...raw,
     createdByUser: raw.giver ?? "nobody",
-    createdAt: raw.createdAt,
-    email: raw.email ?? "unknown",
     images,
   };
 }
@@ -42,5 +38,5 @@ export async function backupAdvert(advert: Advert): Promise<void> {
   await fs.mkdirp(`./backups/${user}`);
 
   await fs.writeFile(filePath, JSON.stringify(advert, null, 2));
-  console.log("wrote case to file:", filePath);
+  console.log("Wrote advert to file:", filePath);
 }
