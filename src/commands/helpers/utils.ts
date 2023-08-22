@@ -30,6 +30,10 @@ export function getDbClient() {
   });
 }
 
+export function getS3Client() {
+  return new S3Client({ region: "eu-west-1" });
+}
+
 export async function listTables(): Promise<string[]> {
   const client = getDbClient();
   const command = new ListTablesCommand({});
@@ -50,33 +54,31 @@ export async function queryDb<T>(): Promise<T> {
 }
 
 export async function getBuckets(): Promise<string[]> {
-  const client = new S3Client({ region: "eu-west-1" });
+  const client = getS3Client();
   const command = new ListBucketsCommand({});
   const result = await client.send(command);
   return result.Buckets?.map(({ Name }) => Name).filter(isValid) ?? [];
 }
 
-export async function getBucket(matcher: RegExp): Promise<string> {
+export async function getBucket(): Promise<string> {
+  const regex = new RegExp(`-${process.env.API_ENV}$`);
   const allBuckets = await getBuckets();
-  const bucket = allBuckets.find((name) => matcher.test(name));
+  const bucket = allBuckets.find((name) => regex.test(name));
 
   if (!bucket) {
-    throw new Error(
-      `Unable to find bucket matching pattern '${matcher.source}'`,
-    );
+    throw new Error(`Unable to find bucket matching pattern '${regex.source}'`);
   }
 
   return bucket;
 }
 
 export async function createPresignedUrl(
-  bucket: string,
   key: string,
 ): Promise<string | undefined> {
-  const client = new S3Client({ region: "eu-west-1" });
+  const client = getS3Client();
 
   const command = new GetObjectCommand({
-    Bucket: await getBucket(new RegExp(`${bucket}$`)),
+    Bucket: await getBucket(),
     Key: `public/${key}`,
   });
   return getSignedUrl(client, command, { expiresIn: 300 });
