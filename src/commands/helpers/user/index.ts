@@ -11,7 +11,7 @@ async function createUserMapper(u: UserType): Promise<User> {
   return {
     id: attributes.sub,
     userName: u.Username,
-    email: attributes.email.toLowerCase(),
+    email: attributes.email?.toLowerCase(),
     name: attributes.name,
     address: attributes.address,
     department: attributes["custom:department"],
