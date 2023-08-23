@@ -3,6 +3,17 @@ import {
   ListTablesCommand,
   ListTablesCommandOutput,
 } from "@aws-sdk/client-dynamodb";
+import {
+  CognitoIdentityProviderClient,
+  ListUsersCommand,
+  AdminGetUserCommand,
+  AdminGetUserCommandOutput,
+  AdminListGroupsForUserCommand,
+  ListUserPoolsCommand,
+  UserPoolDescriptionType,
+  UserType,
+  AttributeType,
+} from "@aws-sdk/client-cognito-identity-provider";
 import { parallelScan } from "@shelf/dynamodb-parallel-scan";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
@@ -34,6 +45,10 @@ export function getS3Client() {
   return new S3Client(AWS_CONFIG);
 }
 
+export function getCognitoClient() {
+  return new CognitoIdentityProviderClient(AWS_CONFIG);
+}
+
 export async function listTables(): Promise<string[]> {
   const client = getDbClient();
   const command = new ListTablesCommand({});
@@ -51,6 +66,51 @@ export async function queryDb<T>(): Promise<T> {
     { TableName: await getTableNameFromEnv() },
     { concurrency: 500 },
   ) ?? []) as T;
+}
+
+export async function listCognitoPools(): Promise<UserPoolDescriptionType[]> {
+  const client = getCognitoClient();
+  const command = new ListUserPoolsCommand({
+    MaxResults: 60,
+  });
+  const response = await client.send(command);
+  return response.UserPools ?? [];
+}
+
+export async function getUserPoolFromEnv(): Promise<string | undefined> {
+  const pools = await listCognitoPools();
+  return pools.find(({ Name }) => Name?.endsWith(`-${process.env.API_ENV}`))
+    ?.Id;
+}
+
+export async function listUsers(): Promise<UserType[]> {
+  const client = getCognitoClient();
+  const command = new ListUsersCommand({
+    UserPoolId: await getUserPoolFromEnv(),
+  });
+  const response = await client.send(command);
+  return response.Users ?? [];
+}
+
+export async function getUser(
+  userName: string,
+): Promise<AdminGetUserCommandOutput> {
+  const client = getCognitoClient();
+  const command = new AdminGetUserCommand({
+    UserPoolId: await getUserPoolFromEnv(),
+    Username: userName,
+  });
+  return client.send(command);
+}
+
+export async function listGroupsForUser(userName: string): Promise<string[]> {
+  const client = getCognitoClient();
+  const command = new AdminListGroupsForUserCommand({
+    UserPoolId: await getUserPoolFromEnv(),
+    Username: userName,
+  });
+  const response = await client.send(command);
+  return response.Groups?.map(({ GroupName }) => GroupName ?? "") ?? [];
 }
 
 export async function getBuckets(): Promise<string[]> {
@@ -82,4 +142,16 @@ export async function createPresignedUrl(
     Key: `public/${key}`,
   });
   return getSignedUrl(client, command, { expiresIn: 300 });
+}
+
+export function createAttributes(
+  attributes: AttributeType[] = [],
+): Record<string, string> {
+  return attributes.reduce((prev, attr) => {
+    const key = attr.Name!;
+    return {
+      ...prev,
+      [key]: attr?.Value ?? "",
+    };
+  }, {});
 }
