@@ -21,6 +21,7 @@ import {
   ListBucketsCommand,
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
+import { isValid } from "./utils";
 
 const AWS_CONFIG = { region: "eu-west-1" };
 
