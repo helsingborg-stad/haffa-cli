@@ -173,7 +173,7 @@ export interface Image {
 
 type RawAdvertWithoutImages = Omit<RawAdvert, "images">;
 
-export interface Advert extends RawAdvertWithoutImages {
+export interface AdvertExportedFromAWS extends RawAdvertWithoutImages {
   createdByUser: string;
   images?: Image[];
 }
