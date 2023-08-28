@@ -34,7 +34,7 @@ async function gqlFetchMap<T>(
 export function gqlClient(
   options: FluentGqlOptions = {
     init: null,
-    url: "/api/v1/haffa/graphql",
+    url: `${process.env.HAFFA_BACKEND}/api/v1/haffa/graphql`,
     headers: {},
     query: "",
     variables: null,
