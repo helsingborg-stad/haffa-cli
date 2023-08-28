@@ -51,9 +51,11 @@ export async function backupAdvert(
   console.log("Wrote advert to file:", filePath);
 }
 
-export function createAdvertFactory(): (
-  input: AdvertInput,
-) => Promise<AdvertMutationResult> {
-  const adverts: AdvertsRepository = createAdvertsRepository("");
+interface CreateAdvertFactory {
+  (input: AdvertInput): Promise<AdvertMutationResult>;
+}
+
+export function createAdvertFactory(): CreateAdvertFactory {
+  const adverts: AdvertsRepository = createAdvertsRepository("HEPP");
   return adverts.createAdvert;
 }
