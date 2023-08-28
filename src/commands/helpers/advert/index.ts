@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import { createPresignedUrl, queryDb } from "../aws";
-import { RawAdvert, Advert, ItemImages, Image } from "./types";
+import { RawAdvert, ItemImages, Image, AdvertExportedFromAWS } from "./types";
 
 // const DEFAULT_PROJECTION = "";
 // const DEFAULT_EXPRESSION_ATTRIBUTE_NAMES = {};
@@ -12,7 +12,9 @@ async function createImageUrlMapper(item: ItemImages): Promise<Image> {
   };
 }
 
-async function createAdvertMapper(raw: RawAdvert): Promise<Advert> {
+async function createAdvertMapper(
+  raw: RawAdvert,
+): Promise<AdvertExportedFromAWS> {
   const images = await Promise.all(raw.images?.map(createImageUrlMapper) ?? []);
   return {
     ...raw,
@@ -21,14 +23,16 @@ async function createAdvertMapper(raw: RawAdvert): Promise<Advert> {
   };
 }
 
-export async function getAdvertsFromAws(): Promise<Advert[]> {
+export async function getAdvertsFromAws(): Promise<AdvertExportedFromAWS[]> {
   const rawAdverts = (await queryDb<RawAdvert[]>()).filter(
     ({ version }) => version === 0,
   );
   return Promise.all(rawAdverts.map(createAdvertMapper));
 }
 
-export async function backupAdvert(advert: Advert): Promise<void> {
+export async function backupAdvert(
+  advert: AdvertExportedFromAWS,
+): Promise<void> {
   const user = advert.createdByUser;
   const advertId = advert.id;
 
