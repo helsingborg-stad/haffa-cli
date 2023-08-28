@@ -1,8 +1,16 @@
 import fs from "fs-extra";
 import path from "path";
 import { createPresignedUrl, queryDb } from "../aws";
-import { RawAdvert, ItemImages, Image, AdvertExportedFromAWS } from "./types";
-
+import type {
+  RawAdvert,
+  ItemImages,
+  Image,
+  AdvertExportedFromAWS,
+  AdvertsRepository,
+  AdvertMutationResult,
+  AdvertInput,
+} from "./types";
+import { createAdvertsRepository } from "./adverts-repository";
 
 async function createImageUrlMapper(item: ItemImages): Promise<Image> {
   return {
@@ -41,4 +49,11 @@ export async function backupAdvert(
 
   await fs.writeFile(filePath, JSON.stringify(advert, null, 2));
   console.log("Wrote advert to file:", filePath);
+}
+
+export function createAdvertFactory(): (
+  input: AdvertInput,
+) => Promise<AdvertMutationResult> {
+  const adverts: AdvertsRepository = createAdvertsRepository("");
+  return adverts.createAdvert;
 }
