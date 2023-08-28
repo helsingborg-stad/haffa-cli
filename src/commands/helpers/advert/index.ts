@@ -3,8 +3,6 @@ import path from "path";
 import { createPresignedUrl, queryDb } from "../aws";
 import { RawAdvert, ItemImages, Image, AdvertExportedFromAWS } from "./types";
 
-// const DEFAULT_PROJECTION = "";
-// const DEFAULT_EXPRESSION_ATTRIBUTE_NAMES = {};
 
 async function createImageUrlMapper(item: ItemImages): Promise<Image> {
   return {
