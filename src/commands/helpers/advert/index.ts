@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import { createPresignedUrl, queryDb } from "../utils";
+import { createPresignedUrl, queryDb } from "../aws";
 import { RawAdvert, Advert, ItemImages, Image } from "./types";
 
 // const DEFAULT_PROJECTION = "";

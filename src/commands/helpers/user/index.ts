@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import { UserType } from "@aws-sdk/client-cognito-identity-provider";
-import { createAttributes, listGroupsForUser, listUsers } from "../utils";
+import { createAttributes, listGroupsForUser, listUsers } from "../aws";
 import { User } from "./types";
 
 const BACKUP_USERS_PATH = "./backups/users";
