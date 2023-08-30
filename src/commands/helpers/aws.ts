@@ -23,7 +23,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { isValid } from "./utils";
 
-const AWS_CONFIG = { region: "eu-west-1" };
+const AWS_CONFIG = { region: process.env.AWS_REGION };
 
 export function getDbClient() {
   return new DynamoDBClient(AWS_CONFIG);
@@ -46,7 +46,7 @@ export async function listTables(): Promise<string[]> {
 
 export async function getTableNameFromEnv(): Promise<string | undefined> {
   const tables = await listTables();
-  return tables.find((t) => t.includes(process.env.API_ENV as string));
+  return tables.find((t) => t.includes(process.env.AWS_ENV as string));
 }
 
 export async function queryDb<T>(): Promise<T> {
@@ -67,7 +67,7 @@ export async function listCognitoPools(): Promise<UserPoolDescriptionType[]> {
 
 export async function getUserPoolFromEnv(): Promise<string | undefined> {
   const pools = await listCognitoPools();
-  return pools.find(({ Name }) => Name?.endsWith(`-${process.env.API_ENV}`))
+  return pools.find(({ Name }) => Name?.endsWith(`-${process.env.AWS_ENV}`))
     ?.Id;
 }
 
@@ -109,7 +109,7 @@ export async function getBuckets(): Promise<string[]> {
 }
 
 export async function getBucket(): Promise<string> {
-  const regex = new RegExp(`-${process.env.API_ENV}$`);
+  const regex = new RegExp(`-${process.env.AWS_ENV}$`);
   const allBuckets = await getBuckets();
   const bucket = allBuckets.find((name) => regex.test(name));
 
@@ -129,7 +129,9 @@ export async function createPresignedUrl(
     Bucket: await getBucket(),
     Key: `public/${key}`,
   });
-  return getSignedUrl(client, command, { expiresIn: 300 });
+  return getSignedUrl(client, command, {
+    expiresIn: Number(process.env.AWS_PRESIGNED_URL_EXPIRE_TIME),
+  });
 }
 
 export function createAttributes(
