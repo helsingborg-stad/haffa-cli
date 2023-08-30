@@ -50,10 +50,9 @@ export async function backupAdvert(advert: BackupAdvert): Promise<void> {
   console.log("Wrote advert to file:", filePath);
 }
 
-export function createAdvertsFromBackup(
-  backupAdverts: BackupAdvert[],
-): AdvertInput[] {
-  return backupAdverts.map((adv: BackupAdvert) => ({
+export function createAdvertsFromBackup(): AdvertInput[] {
+  const adverts = readBackupAdverts();
+  return adverts.map((adv: BackupAdvert) => ({
     title: adv.title,
     description: adv?.description ?? "",
     quantity: adv?.quantity ?? 0,
