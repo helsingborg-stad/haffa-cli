@@ -1,16 +1,20 @@
 import fs from "fs-extra";
 import path from "path";
 import { createPresignedUrl, queryDb } from "../aws";
+import { createAdvertsRepository } from "./adverts-repository";
+import { processDirectory, processJsonFile } from "../utils";
 import type {
   RawAdvert,
   ItemImages,
   Image,
-  AdvertExportedFromAWS,
-  AdvertsRepository,
+  BackupAdvert,
   AdvertMutationResult,
   AdvertInput,
 } from "./types";
-import { createAdvertsRepository } from "./adverts-repository";
+
+interface CreateAdvertFactory {
+  (input: AdvertInput): Promise<AdvertMutationResult>;
+}
 
 async function createImageUrlMapper(item: ItemImages): Promise<Image> {
   return {
@@ -18,28 +22,23 @@ async function createImageUrlMapper(item: ItemImages): Promise<Image> {
   };
 }
 
-async function createAdvertMapper(
-  raw: RawAdvert,
-): Promise<AdvertExportedFromAWS> {
+async function createBackupAdvertMapper(raw: RawAdvert): Promise<BackupAdvert> {
   const images = await Promise.all(raw.images?.map(createImageUrlMapper) ?? []);
   return {
     ...raw,
-    createdByUser: raw.giver ?? "nobody",
     images,
   };
 }
 
-export async function getAdvertsFromAws(): Promise<AdvertExportedFromAWS[]> {
+export async function getAdvertsFromAws(): Promise<BackupAdvert[]> {
   const rawAdverts = (await queryDb<RawAdvert[]>()).filter(
     ({ version }) => version === 0,
   );
-  return Promise.all(rawAdverts.map(createAdvertMapper));
+  return Promise.all(rawAdverts.map(createBackupAdvertMapper));
 }
 
-export async function backupAdvert(
-  advert: AdvertExportedFromAWS,
-): Promise<void> {
-  const user = advert.createdByUser;
+export async function backupAdvert(advert: BackupAdvert): Promise<void> {
+  const user = advert?.giver ?? "nobody";
   const advertId = advert.id;
 
   const fileName = `${advertId}.json`;
@@ -51,11 +50,38 @@ export async function backupAdvert(
   console.log("Wrote advert to file:", filePath);
 }
 
-interface CreateAdvertFactory {
-  (input: AdvertInput): Promise<AdvertMutationResult>;
+export function createAdvertsFromBackup(
+  backupAdverts: BackupAdvert[],
+): AdvertInput[] {
+  return backupAdverts.map((adv: BackupAdvert) => ({
+    title: adv.title,
+    description: adv?.description ?? "",
+    quantity: adv?.quantity ?? 0,
+    images: adv?.images ?? [],
+    unit: adv?.quantityUnit ?? "unknown",
+    material: JSON.stringify(adv?.material) ?? "unknown",
+    condition: JSON.stringify(adv?.condition) ?? "unknown",
+    usage: JSON.stringify(adv?.areaOfUse) ?? "unknown",
+    location: {
+      adress: adv?.address ?? "unknown",
+      zipCode: adv?.postalCode ?? "unknown",
+      city: adv?.city ?? "unknown",
+      country: "",
+    },
+    contact: {
+      phone: "",
+      email: "",
+    },
+  }));
+}
+
+export function readBackupAdverts(): BackupAdvert[] {
+  return processDirectory(
+    "./backups",
+    processJsonFile,
+  ) as unknown as BackupAdvert[];
 }
 
 export function createAdvertFactory(): CreateAdvertFactory {
-  const adverts: AdvertsRepository = createAdvertsRepository("HEPP");
-  return adverts.createAdvert;
+  return createAdvertsRepository("").createAdvert;
 }
