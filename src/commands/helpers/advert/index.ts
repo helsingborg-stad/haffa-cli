@@ -79,5 +79,6 @@ export function readBackupAdverts(): BackupAdvert[] {
 }
 
 export function createAdvertFactory(): CreateAdvertFactory {
-  return createAdvertsRepository("").createAdvert;
+  const token = "";
+  return createAdvertsRepository(token).createAdvert;
 }
