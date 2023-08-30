@@ -67,7 +67,6 @@ const advertProps = `
 	material
 	condition
 	usage
-
 	location {
 		adress
 		zipCode

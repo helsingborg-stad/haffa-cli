@@ -167,16 +167,23 @@ export type Administration = {
   vardOchOmsorgsforvaltningen?: boolean | null;
 };
 
+/**
+ * Backup advert
+ */
+
+type RawAdverImagesOmitted = Omit<RawAdvert, "images">;
+
 export interface Image {
   url: string;
 }
 
-type RawAdvertWithoutImages = Omit<RawAdvert, "images">;
-
-export interface AdvertExportedFromAWS extends RawAdvertWithoutImages {
-  createdByUser: string;
+export interface BackupAdvert extends RawAdverImagesOmitted {
   images?: Image[];
 }
+
+/**
+ *  Haffa v1.0 types
+ */
 
 export interface AdvertUserFields {
   title: string;
@@ -187,7 +194,6 @@ export interface AdvertUserFields {
   material: string;
   condition: string;
   usage: string;
-
   location: AdvertLocation;
   contact: AdvertContact;
 }
@@ -292,12 +298,10 @@ export interface AdvertInput {
   description: string;
   quantity: number;
   images: Image[];
-  /* terms */
   unit: string;
   material: string;
   condition: string;
   usage: string;
-
   location: AdvertLocation;
   contact: AdvertContact;
 }
