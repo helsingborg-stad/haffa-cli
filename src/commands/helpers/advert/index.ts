@@ -52,9 +52,27 @@ export async function backupAdvert(advert: BackupAdvert): Promise<void> {
 
 export function createAdvertsFromBackup(
   backupAdverts: BackupAdvert[],
-  mapper: (adv: BackupAdvert) => AdvertInput,
 ): AdvertInput[] {
-  return backupAdverts.map(mapper);
+  return backupAdverts.map((adv: BackupAdvert) => ({
+    title: adv.title,
+    description: adv?.description ?? "",
+    quantity: adv?.quantity ?? 0,
+    images: adv?.images ?? [],
+    unit: adv?.quantityUnit ?? "unknown",
+    material: JSON.stringify(adv?.material) ?? "unknown",
+    condition: JSON.stringify(adv?.condition) ?? "unknown",
+    usage: JSON.stringify(adv?.areaOfUse) ?? "unknown",
+    location: {
+      adress: adv?.address ?? "unknown",
+      zipCode: adv?.postalCode ?? "unknown",
+      city: adv?.city ?? "unknown",
+      country: "",
+    },
+    contact: {
+      phone: "",
+      email: "",
+    },
+  }));
 }
 
 export function readBackupAdverts(): BackupAdvert[] {
