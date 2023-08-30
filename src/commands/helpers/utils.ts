@@ -21,8 +21,8 @@ export function processJsonFile(filePath: string) {
 
 export function processDirectory(
   directoryPath: string,
-  callback: (filePath: string) => any,
-  processedFiles: Record<string, unknown>[] = [],
+  callback: (filePath: string) => unknown,
+  processedFiles: any = [],
 ) {
   const files = fs.readdirSync(directoryPath, "utf-8");
   files.forEach((file) => {

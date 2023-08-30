@@ -76,10 +76,7 @@ export function createAdvertsFromBackup(
 }
 
 export function readBackupAdverts(): BackupAdvert[] {
-  return processDirectory(
-    "./backups",
-    processJsonFile,
-  ) as unknown as BackupAdvert[];
+  return processDirectory("./backups", processJsonFile);
 }
 
 export function createAdvertFactory(): CreateAdvertFactory {
