@@ -1,3 +1,5 @@
+import { fileTypeFromBuffer } from "file-type";
+import { writeFileSync } from "fs";
 import {
   DynamoDBClient,
   ListTablesCommand,
@@ -120,15 +122,50 @@ export async function getBucket(): Promise<string> {
   return bucket;
 }
 
+async function createGetObjectCommand(key: string): Promise<GetObjectCommand> {
+  return new GetObjectCommand({
+    Bucket: await getBucket(),
+    Key: `public/${key}`,
+  });
+}
+
+export async function getObjectAsBase64DataUrl(key: string): Promise<string> {
+  const client = getS3Client();
+  const response = await client.send(await createGetObjectCommand(key));
+
+  const data = (await response.Body?.transformToByteArray()) ?? Buffer.alloc(0);
+
+  const mime = await getFileMime(data);
+  const base64 = Buffer.from(data).toString("base64");
+
+  return `data:${mime};base64,${base64}`;
+}
+
+async function getFileExtension(data: ArrayBuffer): Promise<string> {
+  const { ext } = (await fileTypeFromBuffer(data)) ?? {};
+  return ext ?? "";
+}
+
+async function getFileMime(data: ArrayBuffer): Promise<string> {
+  const { mime } = (await fileTypeFromBuffer(data)) ?? {};
+  return mime ?? "";
+}
+
+export async function saveObject(key: string): Promise<void> {
+  const client = getS3Client();
+  const response = await client.send(await createGetObjectCommand(key));
+
+  const data = (await response.Body?.transformToByteArray()) ?? Buffer.alloc(0);
+  const ext = await getFileExtension(data);
+  writeFileSync(`./downloads/public/${key}.${ext}`, data);
+}
+
 export async function createPresignedUrl(
   key: string,
 ): Promise<string | undefined> {
   const client = getS3Client();
+  const command = await createGetObjectCommand(key);
 
-  const command = new GetObjectCommand({
-    Bucket: await getBucket(),
-    Key: `public/${key}`,
-  });
   return getSignedUrl(client, command, {
     expiresIn: Number(process.env.AWS_PRESIGNED_URL_EXPIRE_TIME),
   });
