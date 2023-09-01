@@ -6,12 +6,14 @@ const commandSpec: CommandModule = {
   command: "create-advert",
   describe: "Creates adverts from backup",
   async handler({}) {
-    const adverts = createAdvertsFromBackup();
+    const adverts = await createAdvertsFromBackup();
 
     const createAdvert = createAdvertFactory();
+
     const result = await Promise.all<AdvertMutationResult>(
       adverts.map(createAdvert),
     );
+
     console.log("Import result: ", result);
   },
 };
